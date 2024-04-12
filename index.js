@@ -7,12 +7,18 @@ exports.handler = async (event) => {
   const record = event['Records'][0]
   const messageData = record.Sns.Message
   const parsedMessageData = JSON.parse(messageData)
-
-  let callbackUrl = process.env.callbackUrl  
+  console.log(`parsedMessageData is ${JSON.stringify(parsedMessageData)}`)
+  let callbackUrl = process.env.callbackUrl
+  console.log(`callbackUrl is ${callbackUrl}`)
   const client = new apigw.ApiGatewayManagementApiClient({ endpoint: callbackUrl });
 
+  let response = "";
   const connectionId = parsedMessageData.connectionId;
+  console.log(`connectionId is ${connectionId}`)
+
   const sendMessage = (token) => {
+    response += token
+
     const requestParams = {
       ConnectionId: connectionId,
       Data: JSON.stringify({ data: token }),
@@ -29,6 +35,8 @@ exports.handler = async (event) => {
 
   let llmUrl = process.env.llmUrl
   let llmModel = process.env.llmModel
+  console.log(`llmUrl is ${llmUrl}`)
+  console.log(`llmModel is ${llmModel}`)
   const chatModel = new ollama.ChatOllama({
     baseUrl: llmUrl,  
     model: llmModel,
@@ -46,6 +54,6 @@ exports.handler = async (event) => {
   await chatModel.invoke(message)
   return {
     statusCode: 200,
-    body: JSON.stringify({ data: "" })
+    body: response
   }
 };
